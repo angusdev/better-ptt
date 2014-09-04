@@ -1,0 +1,16 @@
+{
+  "name": "Better PTT",
+  "version": "0.9",
+  "manifest_version": 2,
+  "description": "Better PPT",
+  "icons": {
+    "128": "icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.ptt.cc/bbs/*"],
+      "js": ["better-ptt.user.js"],
+      "css": ["better-ptt.css"]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+.ellab-selected, .ellab-selected:link, .ellab-selected:visited {
+  background-color: #0c0a66;
+  color: #ff6;
+}
+
+#preview {
+  position: fixed;
+  right: 0;
+  width: 400px;
+  top: 90px;
+  font-size: 0.5em;
+  margin-top: 10px;
+  margin-right: 10px;
+}
+
+#preview-main-content {
+  position: relative;
+  white-space: pre;
+}
+#preview .bbs-content {
+  font-size: 16px;
+}
+
+#preview .bbs-screen {
+  min-width: 0;
+  line-height: 120%;
+}
