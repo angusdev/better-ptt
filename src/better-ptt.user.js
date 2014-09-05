@@ -17,6 +17,8 @@ var PAGE_TYPE_MESSAGE = 2;
 var pageType = PAGE_TYPE_NONE;
 var boardIndex = 0;
 
+var xhr = null;
+
 function offsetTop(ele) {
   var top = 0;
   while (ele) {
@@ -108,7 +110,13 @@ function select(ele) {
     document.cookie = 'ellabselectedarticle=' + ele.getAttribute('href') + ';';
 
     // load the preview
-    var xhr = new XMLHttpRequest();
+    if (xhr) {
+      xhr.abort();
+      xhr = new XMLHttpRequest();
+    }
+    else {
+      xhr = new XMLHttpRequest();
+    }
     xhr.onreadystatechange = function() {
       if (xhr.readyState == 4) {
         if (xhr.status == 200) {
@@ -127,6 +135,7 @@ function select(ele) {
           }
           doc = null;
         }
+        xhr = null;
       }
     };
 
