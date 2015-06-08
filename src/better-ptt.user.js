@@ -65,6 +65,67 @@ function animateScrollTo(scrollTo, interval, onComplete) {
   window.setTimeout(scroller, 20);
 }
 
+function animate(element, toOpts, interval, onComplete) {
+  function initState() {
+    var result = {};
+    var computedStyle = [];
+    if (window.getComputedStyle) {
+      computedStyle = window.getComputedStyle(element);
+    }
+    for (var key in toOpts) {
+      result[key] = computedStyle[key] || ('0' + (toOpts[key] + '').replace(/(.*\d+)/, ''));
+      if (result[key].match(/\d$/)) {
+        result[key] += 'px';
+      }
+    }
+
+    return result;
+  }
+
+  var requestAnimationFrame =
+    (
+      requestAnimationFrame ||
+      (
+        function(/* function */ callback){
+          window.setTimeout(callback, 1000 / 60);
+        }
+      )
+    );
+  var initOpts = initState();
+
+  var start = new Date().getTime();
+
+  function animator() {
+    var now = new Date().getTime();
+
+    if (!window.getComputedStyle || now - start >= interval) {
+      for (var doneKey in toOpts) {
+        var doneTo = parseFloat(toOpts[doneKey]);
+        var doneUnit = (initOpts[doneKey] + '').match(/([^\d]*)$/);
+        doneUnit = doneUnit?doneUnit[1].trim():'';
+        element.style[doneKey] = doneTo + doneUnit;
+      }
+      if (onComplete) {
+        onComplete.apply(element);
+      }
+    }
+    else {
+      for (var key in toOpts) {
+        var from = initOpts[key];
+        var to = toOpts[key];
+        var unit = (from + '').match(/([^\d]*)$/);
+        unit = unit?unit[1].trim():'';
+        from = parseFloat(from);
+        to = parseFloat(to);
+        var target = (from + (to - from) * (now - start) / interval) + unit;
+        element.style[key] = target;
+      }
+      requestAnimationFrame(animator);
+    }
+  }
+  requestAnimationFrame(animator);
+}
+
 function ensureVisible(ele, top, padding) {
   if (typeof padding !== 'number') {
     padding = 20;
@@ -181,9 +242,12 @@ function getNextLink(isUp) {
 }
 
 function boardKeyDown(e) {
-  if (e.altKey || e.altGraphKey || e.ctrlKey || e.metaKey || e.shiftKey) {
+  if (e.altKey || e.altGraphKey || e.ctrlKey || e.metaKey) {
     return;
   }
+
+  var preview = document.getElementById('preview');
+  var expandedPreview = preview.getAttribute('data-ellab-preview-expanded');
 
   if (e.keyCode === 13) {
     e.preventDefault();
@@ -194,7 +258,66 @@ function boardKeyDown(e) {
       curr.click();
     }
   }
+  else if ((expandedPreview || e.shiftKey) && (e.keyCode === 38 || e.keyCode === 40)) {
+    // preview is expanded then up, down, or shift-up, shift-down, scroll the preview
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!preview.getAttribute('ellab-original-offset-top')) {
+      preview.setAttribute('ellab-original-offset-top', preview.offsetTop);
+    }
+
+    // scroll 20% of page normally, large scroll (80%) if shift- and in expanded preview
+    var scrollPageSize = (expandedPreview && e.shiftKey)?0.8:0.2;
+    var originalOffsetTop = parseInt(preview.getAttribute('ellab-original-offset-top'), 10);
+    var vp = getViewport();
+    var previewHeight = vp.bottom - vp.top - originalOffsetTop;
+    var scrollHeight = previewHeight - Math.max(20, previewHeight * (1 - scrollPageSize));
+
+    var tm = preview.style.marginTop || 0;
+    tm = parseInt(tm, 10);
+    if (e.keyCode === 38) {
+      tm = Math.min(0, tm + scrollHeight);
+    }
+    else {
+      // up
+      tm = Math.max(-preview.offsetHeight, tm - scrollHeight);
+    }
+    animate(preview, { marginTop: tm }, 200);
+  }
+  else if ((expandedPreview && (e.keyCode === 27 || e.keyCode === 32)) || (!e.shiftKey && e.keyCode === 37)) {
+    // expanded preview, then press esc, space, or left, collapse preview
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    preview.removeAttribute('data-ellab-preview-expanded');
+    preview.style.marginTop = 0;
+
+    animate(preview, { width: 400 }, 200);
+    document.querySelector('.r-list-container.bbs-screen').className =
+      document.querySelector('.r-list-container.bbs-screen').className.replace(/\s+back/, '');
+  }
+  else if ((!expandedPreview && e.keyCode === 32) || (!e.shiftKey && e.keyCode === 39)) {
+    // collapsed preview, then press space, or right, expand preview
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    preview.setAttribute('data-ellab-preview-expanded', true);
+
+    var oldWidth = preview.style.width;
+    preview.style.width = '100%';
+    var widthPx = parseInt(window.getComputedStyle(preview).width, 10);
+    preview.style.width = oldWidth;
+
+    animate(preview, { width: widthPx * 0.8 }, 200);
+    document.querySelector('.r-list-container.bbs-screen').className =
+      document.querySelector('.r-list-container.bbs-screen').className.replace(/\s+back/, '') + ' back';
+  }
   else if (e.keyCode === 38 || e.keyCode === 40) {
+    // up, down, scroll the links
     e.preventDefault();
     e.stopPropagation();
 
@@ -227,7 +350,8 @@ function boardKeyDown(e) {
       ensureVisible(homeLinks[0], true);
     }
   }
-  else if (e.keyCode === 39) {
+  else if (e.shiftKey && e.keyCode === 39) {
+    // shift-right key, next page
     e.preventDefault();
     e.stopPropagation();
 
@@ -238,7 +362,8 @@ function boardKeyDown(e) {
       }
     }
   }
-  else if (e.keyCode === 37) {
+  else if (e.shiftKey && e.keyCode === 37) {
+    // shift-left key, prev page
     e.preventDefault();
     e.stopPropagation();
 
