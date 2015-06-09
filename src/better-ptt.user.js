@@ -279,11 +279,12 @@ function boardKeyDown(e) {
     var tm = preview.style.marginTop || 0;
     tm = parseInt(tm, 10);
     if (e.keyCode === 38) {
+      // up key
       tm = Math.min(0, tm + scrollHeight);
     }
     else {
-      // up
-      tm = Math.max(-preview.offsetHeight, tm - scrollHeight);
+      // down key
+      tm = Math.max(-preview.offsetHeight + previewHeight, tm - scrollHeight);
     }
     animate(preview, { marginTop: tm }, 200);
   }
