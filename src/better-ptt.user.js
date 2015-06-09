@@ -19,6 +19,16 @@ var boardIndex = 0;
 
 var xhr = null;
 
+var requestAnimationFrame =
+  (
+    requestAnimationFrame ||
+    (
+      function(/* function */ callback){
+        window.setTimeout(callback, 1000 / 60);
+      }
+    )
+  );
+
 function offsetTop(ele) {
   var top = 0;
   while (ele) {
@@ -59,10 +69,10 @@ function animateScrollTo(scrollTo, interval, onComplete) {
       window.scrollTo(0,
                       isUp?(Math.max(scrollTo, startY + (scrollTo - startY) * (now - start) / interval)):
                            (Math.min(scrollTo, startY + (scrollTo - startY) * (now - start) / interval)));
-      window.setTimeout(scroller, 10);
+      requestAnimationFrame(scroller);
     }
   }
-  window.setTimeout(scroller, 20);
+  requestAnimationFrame(scroller);
 }
 
 function animate(element, toOpts, interval, onComplete) {
@@ -82,15 +92,6 @@ function animate(element, toOpts, interval, onComplete) {
     return result;
   }
 
-  var requestAnimationFrame =
-    (
-      requestAnimationFrame ||
-      (
-        function(/* function */ callback){
-          window.setTimeout(callback, 1000 / 60);
-        }
-      )
-    );
   var initOpts = initState();
 
   var start = new Date().getTime();
