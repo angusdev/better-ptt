@@ -35,6 +35,7 @@
   font-size: 0.5em;
   margin-top: 0;
   margin-right: 10px;
+  box-shadow: -3px 0 20px 5px #000;
 }
 
 #preview-main-content {
