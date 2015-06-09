@@ -185,7 +185,8 @@ function select(ele) {
           var t = xhr.responseText;
           var parser = new DOMParser();
           var doc = parser.parseFromString(t, "text/html");
-          var eleArray = doc.querySelectorAll('.article-metaline, .article-metaline-right, .f2, .push');
+          // remove unwanted elements
+          var eleArray = doc.querySelectorAll('.article-metaline, .article-metaline-right, .f2');
           for (var i=0 ; i<eleArray.length ; i++) {
             eleArray[i].parentNode.removeChild(eleArray[i]);
           }
