@@ -42,6 +42,7 @@
   position: relative;
   white-space: pre;
   padding-left: 10px;
+  padding-bottom: 30px;
 }
 #preview[data-ellab-preview-expanded] #preview-main-content {
   padding-left: 20px;
