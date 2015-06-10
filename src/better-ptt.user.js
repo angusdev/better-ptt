@@ -3,6 +3,18 @@
 (function() {
 'use strict';
 
+var KEYCODE_ENTER = 13;
+var KEYCODE_ESC = 27;
+var KEYCODE_SPACE = 32;
+var KEYCODE_PAGE_UP = 33;
+var KEYCODE_PAGE_DOWN = 34;
+var KEYCODE_END = 35;
+var KEYCODE_HOME = 36;
+var KEYCODE_LEFT = 37;
+var KEYCODE_UP = 38;
+var KEYCODE_RIGHT = 39;
+var KEYCODE_DOWN = 40;
+
 var boardOffsetTop = 0;
 
 var prevScrollY = window.scrollY;
@@ -251,7 +263,7 @@ function boardKeyDown(e) {
   var preview = document.getElementById('preview');
   var expandedPreview = preview.getAttribute('data-ellab-preview-expanded');
 
-  if (e.keyCode === 13) {
+  if (e.keyCode === KEYCODE_ENTER) {
     e.preventDefault();
     e.stopPropagation();
 
@@ -260,7 +272,7 @@ function boardKeyDown(e) {
       curr.click();
     }
   }
-  else if ((expandedPreview || e.shiftKey) && (e.keyCode === 38 || e.keyCode === 40)) {
+  else if ((expandedPreview || e.shiftKey) && (e.keyCode === KEYCODE_UP || e.keyCode === KEYCODE_DOWN)) {
     // preview is expanded then up, down, or shift-up, shift-down, scroll the preview
 
     e.preventDefault();
@@ -279,17 +291,15 @@ function boardKeyDown(e) {
 
     var tm = preview.style.marginTop || 0;
     tm = parseInt(tm, 10);
-    if (e.keyCode === 38) {
-      // up key
+    if (e.keyCode === KEYCODE_UP) {
       tm = Math.min(0, tm + scrollHeight);
     }
-    else {
-      // down key
+    else if (e.keyCode === KEYCODE_DOWN) {
       tm = Math.max(-preview.offsetHeight + previewHeight, tm - scrollHeight);
     }
     animate(preview, { marginTop: tm }, 200);
   }
-  else if ((expandedPreview && (e.keyCode === 27 || e.keyCode === 32)) || (!e.shiftKey && e.keyCode === 37)) {
+  else if ((expandedPreview && (e.keyCode === KEYCODE_ESC || e.keyCode === KEYCODE_SPACE)) || (!e.shiftKey && e.keyCode === KEYCODE_LEFT)) {
     // expanded preview, then press esc, space, or left, collapse preview
 
     e.preventDefault();
@@ -302,7 +312,7 @@ function boardKeyDown(e) {
     document.querySelector('.r-list-container.bbs-screen').className =
       document.querySelector('.r-list-container.bbs-screen').className.replace(/\s+back/, '');
   }
-  else if ((!expandedPreview && e.keyCode === 32) || (!e.shiftKey && e.keyCode === 39)) {
+  else if ((!expandedPreview && e.keyCode === KEYCODE_SPACE) || (!e.shiftKey && e.keyCode === KEYCODE_RIGHT)) {
     // collapsed preview, then press space, or right, expand preview
 
     e.preventDefault();
@@ -319,17 +329,17 @@ function boardKeyDown(e) {
     document.querySelector('.r-list-container.bbs-screen').className =
       document.querySelector('.r-list-container.bbs-screen').className.replace(/\s+back/, '') + ' back';
   }
-  else if (e.keyCode === 38 || e.keyCode === 40) {
+  else if (e.keyCode === KEYCODE_UP || e.keyCode === KEYCODE_DOWN) {
     // up, down, scroll the links
     e.preventDefault();
     e.stopPropagation();
 
-    var link = getNextLink(e.keyCode === 38);
+    var link = getNextLink(e.keyCode === KEYCODE_UP);
     unselect();
     select(link);
-    ensureVisible(link, e.keyCode === 38);
+    ensureVisible(link, e.keyCode === KEYCODE_UP);
   }
-  else if (e.keyCode === 35) {
+  else if (e.keyCode === KEYCODE_END) {
     // end key
     e.preventDefault();
     e.stopPropagation();
@@ -341,7 +351,7 @@ function boardKeyDown(e) {
       ensureVisible(endlinks[endlinks.length - 1], false);
     }
   }
-  else if (e.keyCode === 36) {
+  else if (e.keyCode === KEYCODE_HOME) {
     // home key
     e.preventDefault();
     e.stopPropagation();
@@ -353,7 +363,7 @@ function boardKeyDown(e) {
       ensureVisible(homeLinks[0], true);
     }
   }
-  else if (e.shiftKey && e.keyCode === 39) {
+  else if (e.shiftKey && e.keyCode === KEYCODE_RIGHT) {
     // shift-right key, next page
     e.preventDefault();
     e.stopPropagation();
@@ -365,7 +375,7 @@ function boardKeyDown(e) {
       }
     }
   }
-  else if (e.shiftKey && e.keyCode === 37) {
+  else if (e.shiftKey && e.keyCode === KEYCODE_LEFT) {
     // shift-left key, prev page
     e.preventDefault();
     e.stopPropagation();
