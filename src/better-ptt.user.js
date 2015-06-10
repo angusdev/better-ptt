@@ -330,6 +330,7 @@ function boardKeyDown(e) {
     e.stopPropagation();
 
     preview.setAttribute('data-ellab-preview-expanded', true);
+    preview.style.marginTop = 0;
 
     var oldWidth = preview.style.width;
     preview.style.width = '100%';
