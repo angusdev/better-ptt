@@ -272,7 +272,10 @@ function boardKeyDown(e) {
       curr.click();
     }
   }
-  else if ((expandedPreview || e.shiftKey) && (e.keyCode === KEYCODE_UP || e.keyCode === KEYCODE_DOWN)) {
+  else if ((expandedPreview || e.shiftKey) &&
+           (e.keyCode === KEYCODE_UP || e.keyCode === KEYCODE_DOWN ||
+            e.keyCode === KEYCODE_PAGE_UP || e.keyCode === KEYCODE_PAGE_DOWN ||
+            e.keyCode === KEYCODE_HOME || e.keyCode === KEYCODE_END)) {
     // preview is expanded then up, down, or shift-up, shift-down, scroll the preview
 
     e.preventDefault();
@@ -283,7 +286,9 @@ function boardKeyDown(e) {
     }
 
     // scroll 20% of page normally, large scroll (80%) if shift- and in expanded preview
-    var scrollPageSize = (expandedPreview && e.shiftKey)?0.8:0.2;
+    var isPageUpDown = (e.keyCode === KEYCODE_PAGE_UP || e.keyCode === KEYCODE_PAGE_DOWN) || (expandedPreview && e.shiftKey);
+
+    var scrollPageSize = isPageUpDown?0.8:0.2;
     var originalOffsetTop = parseInt(preview.getAttribute('ellab-original-offset-top'), 10);
     var vp = getViewport();
     var previewHeight = vp.bottom - vp.top - originalOffsetTop;
@@ -291,10 +296,16 @@ function boardKeyDown(e) {
 
     var tm = preview.style.marginTop || 0;
     tm = parseInt(tm, 10);
-    if (e.keyCode === KEYCODE_UP) {
+    if (e.keyCode === KEYCODE_HOME) {
+      tm = 0;
+    }
+    else if (e.keyCode === KEYCODE_END) {
+      tm = -preview.offsetHeight + previewHeight;
+    }
+    else if (e.keyCode === KEYCODE_UP || e.keyCode === KEYCODE_PAGE_UP) {
       tm = Math.min(0, tm + scrollHeight);
     }
-    else if (e.keyCode === KEYCODE_DOWN) {
+    else if (e.keyCode === KEYCODE_DOWN || e.keyCode === KEYCODE_PAGE_DOWN) {
       tm = Math.max(-preview.offsetHeight + previewHeight, tm - scrollHeight);
     }
     animate(preview, { marginTop: tm }, 200);
