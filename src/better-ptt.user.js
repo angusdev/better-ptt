@@ -4,6 +4,7 @@
 'use strict';
 
 var KEYCODE_ENTER = 13;
+var KEYCODE_SHIFT = 16;
 var KEYCODE_ESC = 27;
 var KEYCODE_SPACE = 32;
 var KEYCODE_PAGE_UP = 33;
@@ -14,6 +15,7 @@ var KEYCODE_LEFT = 37;
 var KEYCODE_UP = 38;
 var KEYCODE_RIGHT = 39;
 var KEYCODE_DOWN = 40;
+var KEYCODE_SLASH = 191;
 
 var boardOffsetTop = 0;
 
@@ -256,7 +258,17 @@ function getNextLink(isUp) {
 }
 
 function boardKeyDown(e) {
-  if (e.altKey || e.altGraphKey || e.ctrlKey || e.metaKey) {
+  if (e.altKey || e.altGraphKey || e.ctrlKey || e.metaKey || e.keyCode === KEYCODE_SHIFT) {
+    return;
+  }
+
+  var help = document.querySelector('.kbhelp');
+  if (help.style.display === '') {
+    help.style.display = 'none';
+    return;
+  }
+  if (e.keyCode === KEYCODE_SLASH) {
+    help.style.display = '';
     return;
   }
 
@@ -452,6 +464,7 @@ function messageKeyDown(e) {
   }
 }
 
+// Main function here
 var res = document.location.href.match(/https?:\/\/(www\.)?ptt\.cc\/bbs\/.+\/index(\d*)\.html/);
 if (res) {
   pageType = PAGE_TYPE_BOARD;
@@ -472,6 +485,46 @@ if (res) {
   else {
     boardScroll({ scrollDirection: SCROLL_DOWN });
   }
+
+  // show help
+  var kbhelps = [
+    ['?', '顯示此幫助畫面 (按任意鍵關閉)'],
+    [' '],
+    ['up, down', '上一則 / 下一則'],
+    ['shift+left, shift+right', '上一頁 / 下一頁看板'],
+    ['shift+up, shift+down', '預覽面板上 / 下捲動'],
+    ['shift+pgup, shift+pgdn', '預覽面板上 / 下捲動一頁'],
+    ['shift+home, shift+end', '預覽面板跳至最頂或最底'],
+    ['展開 / 還原預覽面板：'],
+    ['right', '展開預覽面板'],
+    ['left, esc', '還原預覽面板'],
+    ['space', '展開 / 還原預覽面板'],
+    ['當預覽面板展開時：'],
+    ['up, down', '預覽面板上 / 下捲動'],
+    ['pgup, shift+up, pgdn, shift+down', '預覽面板上 / 下捲動一頁'],
+    ['home, end', '預覽面板跳至最頂或最底'],
+  ];
+  var help = document.createElement('div');
+  help.className = 'kbhelp';
+  help.style.display = 'none';
+  var helphtml = '';
+  for (var i=0 ; i<kbhelps.length ; i++) {
+    if (kbhelps[i].length === 1) {
+      helphtml += '<div class="kbhelp-section">' + kbhelps[i][0] + '</div>';
+    }
+    else {
+      var keyhtml = '<div class="kbhelp-key"><span>' + kbhelps[i][0] + '</span></div>';
+      // escape the "," first
+      keyhtml = keyhtml.replace(/\\,/g, '&#44');
+      keyhtml = keyhtml.replace(/,\s*/g, '</span></div><div class="kbhelp-separator">或</div><div class="kbhelp-key"><span>');
+      keyhtml = keyhtml.replace(/\+/g, '</span></div><div class="kbhelp-key"><span>');
+      keyhtml = keyhtml.replace(/>(up|down|left|right)</g, '>&nbsp;<div class="arrow-$1"></div><');
+
+      helphtml += '<div class="kbhelp-item"><div class="kbhelp-shortcut">' + keyhtml + '</div><div class="kbhelp-desc">' + kbhelps[i][1] + '</div></div>';
+    }
+  }
+  help.innerHTML = helphtml;
+  document.body.appendChild(help);
 }
 else if (/https?:\/\/(www\.)?ptt\.cc\/bbs\/.+\/.+\.html/.test(document.location.href)) {
   pageType = PAGE_TYPE_MESSAGE;
