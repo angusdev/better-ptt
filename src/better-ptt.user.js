@@ -464,29 +464,7 @@ function messageKeyDown(e) {
   }
 }
 
-// Main function here
-var res = document.location.href.match(/https?:\/\/(www\.)?ptt\.cc\/bbs\/.+\/index(\d*)\.html/);
-if (res) {
-  pageType = PAGE_TYPE_BOARD;
-  boardIndex = parseInt(res[2], 10);
-  boardOffsetTop = offsetTop(document.getElementById('main-container'));
-  var div = document.createElement('div');
-  div.setAttribute('id', 'preview');
-  document.body.appendChild(div);
-
-  var prevSelectedLink = null;
-  var lastSelectedArticle = document.cookie.match(/ellabselectedarticle\=([^;]+)/);
-  if (lastSelectedArticle) {
-    prevSelectedLink = getLinkByHref(lastSelectedArticle[1]);
-  }
-  if (prevSelectedLink) {
-    select(prevSelectedLink);
-  }
-  else {
-    boardScroll({ scrollDirection: SCROLL_DOWN });
-  }
-
-  // show help
+function constructKeyboardHelp() {
   var kbhelps = [
     ['?', '顯示此幫助畫面 (按任意鍵關閉)'],
     [' '],
@@ -526,25 +504,54 @@ if (res) {
   help.innerHTML = helphtml;
   document.body.appendChild(help);
 }
-else if (/https?:\/\/(www\.)?ptt\.cc\/bbs\/.+\/.+\.html/.test(document.location.href)) {
-  pageType = PAGE_TYPE_MESSAGE;
+
+function main() {
+  // Main function here
+  var res = document.location.href.match(/https?:\/\/(www\.)?ptt\.cc\/bbs\/.+\/index(\d*)\.html/);
+  if (res) {
+    pageType = PAGE_TYPE_BOARD;
+    boardIndex = parseInt(res[2], 10);
+    boardOffsetTop = offsetTop(document.getElementById('main-container'));
+    var div = document.createElement('div');
+    div.setAttribute('id', 'preview');
+    document.body.appendChild(div);
+
+    var prevSelectedLink = null;
+    var lastSelectedArticle = document.cookie.match(/ellabselectedarticle\=([^;]+)/);
+    if (lastSelectedArticle) {
+      prevSelectedLink = getLinkByHref(lastSelectedArticle[1]);
+    }
+    if (prevSelectedLink) {
+      select(prevSelectedLink);
+    }
+    else {
+      boardScroll({ scrollDirection: SCROLL_DOWN });
+    }
+
+    constructKeyboardHelp();
+  }
+  else if (/https?:\/\/(www\.)?ptt\.cc\/bbs\/.+\/.+\.html/.test(document.location.href)) {
+    pageType = PAGE_TYPE_MESSAGE;
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (pageType === PAGE_TYPE_BOARD) {
+      boardKeyDown(e);
+    }
+    else if (pageType === PAGE_TYPE_MESSAGE) {
+      messageKeyDown(e);
+    }
+  }, false);
+
+  window.addEventListener('scroll', function(e) {
+    e.scrollDirection = window.scrollY > prevScrollY?SCROLL_DOWN:(window.scrollY < prevScrollY?SCROLL_UP:SCROLL_NONE);
+    prevScrollY = window.scrollY;
+    if (pageType === PAGE_TYPE_BOARD) {
+      boardScroll(e);
+    }
+  }, false);
 }
 
-document.addEventListener('keydown', function(e) {
-  if (pageType === PAGE_TYPE_BOARD) {
-    boardKeyDown(e);
-  }
-  else if (pageType === PAGE_TYPE_MESSAGE) {
-    messageKeyDown(e);
-  }
-}, false);
-
-window.addEventListener('scroll', function(e) {
-  e.scrollDirection = window.scrollY > prevScrollY?SCROLL_DOWN:(window.scrollY < prevScrollY?SCROLL_UP:SCROLL_NONE);
-  prevScrollY = window.scrollY;
-  if (pageType === PAGE_TYPE_BOARD) {
-    boardScroll(e);
-  }
-}, false);
+main();
 
 })();
