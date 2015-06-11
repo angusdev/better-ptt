@@ -1,6 +1,6 @@
 {
   "name": "Better PTT",
-  "version": "0.9",
+  "version": "1.0",
   "manifest_version": 2,
   "description": "Better PPT",
   "icons": {
@@ -12,5 +12,6 @@
       "js": ["better-ptt.user.js"],
       "css": ["better-ptt.css"]
     }
-  ]
+  ],
+  "permissions": [ "storage" ]
 }

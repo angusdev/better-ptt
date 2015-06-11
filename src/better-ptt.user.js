@@ -43,6 +43,20 @@ var requestAnimationFrame =
     )
   );
 
+function compareVersion(v1, v2) {
+  var t1 = (v1 || '').split('.'), t2 = (v2 || '').split('.');
+  for (var i=0;i<Math.min(t1.length, t2.length);i++) {
+    var n1 = parseInt(t1[i], 10);
+    var n2 = parseInt(t2[i], 10);
+    n1 = isNaN(n1)?0:n1;
+    n2 = isNaN(n2)?0:n2;
+    if (n1 !== n2) {
+      return n1 < n2 ? -1 : 1;
+    }
+  }
+  return (t1.length < t2.length)?-1:(t1.length > t2.length?1:0);
+}
+
 function offsetTop(ele) {
   var top = 0;
   while (ele) {
@@ -553,5 +567,15 @@ function main() {
 }
 
 main();
+
+// show the help if upgrade a new version
+chrome.storage.local.get('lastVersion', function(v) {
+  var lastVersion = v.lastVersion;
+  var currVersion = chrome.runtime.getManifest().version;
+  if (compareVersion(lastVersion, currVersion) < 0) {
+    document.querySelector('.kbhelp').style.display = '';
+    chrome.storage.local.set({lastVersion: currVersion});
+  }
+});
 
 })();
