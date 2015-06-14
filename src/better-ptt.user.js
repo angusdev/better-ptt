@@ -298,23 +298,29 @@ function boardKeyDown(e) {
       curr.click();
     }
   }
-  else if ((expandedPreview || e.shiftKey) &&
-           (e.keyCode === KEYCODE_UP || e.keyCode === KEYCODE_DOWN ||
-            e.keyCode === KEYCODE_PAGE_UP || e.keyCode === KEYCODE_PAGE_DOWN ||
-            e.keyCode === KEYCODE_HOME || e.keyCode === KEYCODE_END)) {
+  else if (((expandedPreview || e.shiftKey) &&
+            (e.keyCode === KEYCODE_UP || e.keyCode === KEYCODE_DOWN ||
+             e.keyCode === KEYCODE_PAGE_UP || e.keyCode === KEYCODE_PAGE_DOWN ||
+             e.keyCode === KEYCODE_HOME || e.keyCode === KEYCODE_END)) ||
+           (expandedPreview && !e.shiftKey && e.keyCode === KEYCODE_SPACE)) {
     // preview is expanded then up, down, or shift-up, shift-down, scroll the preview
+    // preview is expanded then space, page down the preview
 
     e.preventDefault();
     e.stopPropagation();
+
+    var isPageDown = e.keyCode === KEYCODE_PAGE_DOWN ||
+                     (expandedPreview && e.shiftKey && e.keyCode === KEYCODE_DOWN) ||
+                     (expandedPreview && !e.shiftKey && e.keyCode === KEYCODE_SPACE);
+    var isPageUp =  e.keyCode === KEYCODE_PAGE_UP ||
+                     (expandedPreview && e.shiftKey && e.keyCode === KEYCODE_UP);
 
     if (!preview.getAttribute('ellab-original-offset-top')) {
       preview.setAttribute('ellab-original-offset-top', preview.offsetTop);
     }
 
-    // scroll 20% of page normally, large scroll (80%) if shift- and in expanded preview
-    var isPageUpDown = (e.keyCode === KEYCODE_PAGE_UP || e.keyCode === KEYCODE_PAGE_DOWN) || (expandedPreview && e.shiftKey);
-
-    var scrollPageSize = isPageUpDown?0.8:0.2;
+    // scroll 20% of page normally, large scroll (80%) for page up/down
+    var scrollPageSize = (isPageUp || isPageDown)?0.8:0.2;
     var originalOffsetTop = parseInt(preview.getAttribute('ellab-original-offset-top'), 10);
     var vp = getViewport();
     var previewHeight = vp.bottom - vp.top - originalOffsetTop;
@@ -328,16 +334,18 @@ function boardKeyDown(e) {
     else if (e.keyCode === KEYCODE_END) {
       tm = -preview.offsetHeight + previewHeight;
     }
-    else if (e.keyCode === KEYCODE_UP || e.keyCode === KEYCODE_PAGE_UP) {
+    else if (e.keyCode === KEYCODE_UP || isPageUp) {
       tm = Math.min(0, tm + scrollHeight);
     }
-    else if (e.keyCode === KEYCODE_DOWN || e.keyCode === KEYCODE_PAGE_DOWN) {
+    else if (e.keyCode === KEYCODE_DOWN || isPageDown) {
       tm = Math.max(-preview.offsetHeight + previewHeight, tm - scrollHeight);
     }
+    // marginTop won't > 0
+    tm = Math.min(0, tm);
     animate(preview, { marginTop: tm }, 200);
   }
-  else if ((expandedPreview && (e.keyCode === KEYCODE_ESC || e.keyCode === KEYCODE_SPACE)) || (!e.shiftKey && e.keyCode === KEYCODE_LEFT)) {
-    // expanded preview, then press esc, space, or left, collapse preview
+  else if ((expandedPreview && e.keyCode === KEYCODE_ESC) || (!e.shiftKey && e.keyCode === KEYCODE_LEFT)) {
+    // expanded preview, then press esc, or left, collapse preview
 
     e.preventDefault();
     e.stopPropagation();
@@ -488,12 +496,12 @@ function constructKeyboardHelp() {
     ['shift+pgup, shift+pgdn', '預覽面板上 / 下捲動一頁'],
     ['shift+home, shift+end', '預覽面板跳至最頂或最底'],
     ['展開 / 還原預覽面板：'],
-    ['right', '展開預覽面板'],
+    ['right, space', '展開預覽面板'],
     ['left, esc', '還原預覽面板'],
-    ['space', '展開 / 還原預覽面板'],
     ['當預覽面板展開時：'],
     ['up, down', '預覽面板上 / 下捲動'],
-    ['pgup, shift+up, pgdn, shift+down', '預覽面板上 / 下捲動一頁'],
+    ['pgup, shift+up', '預覽面板向上捲動一頁'],
+    ['pgdn, shift+down, space', '預覽面板向下捲動一頁'],
     ['home, end', '預覽面板跳至最頂或最底'],
   ];
   var help = document.createElement('div');
