@@ -431,7 +431,7 @@ function boardKeyDown(e) {
       prevLink = document.querySelector('a[href*="index' + (boardIndex - 1) + '.html"]');
     }
     else {
-      prevLink = document.querySelector('.action-bar > .pull-right a:nth-child(2)');
+      prevLink = document.querySelector('.action-bar > .btn-group-paging a:nth-child(2)');
     }
     if (prevLink) {
       prevLink.click();

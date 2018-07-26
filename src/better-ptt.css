@@ -2,9 +2,17 @@
   font-family: "helvetica neue", Helvetica !important;
 }
 
-.r-list-container .r-ent {
-  clear: both;
+.r-ent {
+  line-height: 100% !important;
 }
+
+.r-list-container .r-ent {
+  clear: both !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+}
+
 .r-list-container .r-ent .mark, .r-list-container .r-ent .title, .r-list-container .r-ent .meta {
   float: left;
 }
@@ -20,6 +28,10 @@
 
 .r-list-container.bbs-screen.back {
   -webkit-filter: blur(3px);
+}
+
+.r-list-sep {
+  margin-top: 2.3em;
 }
 
 .ellab-selected, .ellab-selected:link, .ellab-selected:visited {
