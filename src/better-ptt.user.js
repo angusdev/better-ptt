@@ -529,10 +529,18 @@ function constructKeyboardHelp() {
 
 function main() {
   // Main function here
-  var res = document.location.href.match(/https?:\/\/(www\.)?ptt\.cc\/bbs\/.+\/index(\d*)\.html/);
+  let res = document.location.href.match(/https?:\/\/(www\.)?ptt\.cc\/bbs\/.+\/index(\d*)\.html/);
+  if (res) {
+    boardIndex = parseInt(res[2], 10);
+  }
+  else {
+    res = document.location.href.match(/https?:\/\/(www\.)?ptt\.cc\/bbs\/.+\/search\?(page=(\d+)&)?q=.*/);
+    if (res) {
+      boardIndex = parseInt(res[3], 10);
+    }
+  }
   if (res) {
     pageType = PAGE_TYPE_BOARD;
-    boardIndex = parseInt(res[2], 10);
     boardOffsetTop = offsetTop(document.getElementById('main-container'));
     var div = document.createElement('div');
     div.setAttribute('id', 'preview');
