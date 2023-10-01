@@ -1,7 +1,7 @@
 {
   "name": "Better PTT (批踢踢)",
-  "version": "1.0",
-  "manifest_version": 2,
+  "version": "1.1",
+  "manifest_version": 3,
   "description": "支援 keyboard navigation，瀏覽「批踢踢」更順手。",
   "icons": {
     "128": "icon-128.png"
