@@ -3,51 +3,48 @@
 (function() {
 'use strict';
 
-var KEYCODE_ENTER = 13;
-var KEYCODE_SHIFT = 16;
-var KEYCODE_ESC = 27;
-var KEYCODE_SPACE = 32;
-var KEYCODE_PAGE_UP = 33;
-var KEYCODE_PAGE_DOWN = 34;
-var KEYCODE_END = 35;
-var KEYCODE_HOME = 36;
-var KEYCODE_LEFT = 37;
-var KEYCODE_UP = 38;
-var KEYCODE_RIGHT = 39;
-var KEYCODE_DOWN = 40;
-var KEYCODE_SLASH = 191;
+const KEYCODE_ENTER = 13;
+const KEYCODE_SHIFT = 16;
+const KEYCODE_ESC = 27;
+const KEYCODE_SPACE = 32;
+const KEYCODE_PAGE_UP = 33;
+const KEYCODE_PAGE_DOWN = 34;
+const KEYCODE_END = 35;
+const KEYCODE_HOME = 36;
+const KEYCODE_LEFT = 37;
+const KEYCODE_UP = 38;
+const KEYCODE_RIGHT = 39;
+const KEYCODE_DOWN = 40;
+const KEYCODE_SLASH = 191;
 
-var boardOffsetTop = 0;
+const SCROLL_NONE = 0;
+const SCROLL_UP = 1;
+const SCROLL_DOWN = 2;
 
-var prevScrollY = window.scrollY;
-var SCROLL_NONE = 0;
-var SCROLL_UP = 1;
-var SCROLL_DOWN = 2;
+const PAGE_TYPE_NONE = 0;
+const PAGE_TYPE_BOARD = 1;
+const PAGE_TYPE_MESSAGE = 2;
 
-var PAGE_TYPE_NONE = 0;
-var PAGE_TYPE_BOARD = 1;
-var PAGE_TYPE_MESSAGE = 2;
+let boardOffsetTop = 0;
 
-var pageType = PAGE_TYPE_NONE;
-var boardIndex = 0;
+let prevScrollY = window.scrollY;
 
-var xhr = null;
+let pageType = PAGE_TYPE_NONE;
+let boardIndex = 0;
 
-var requestAnimationFrame =
-  (
-    requestAnimationFrame ||
-    (
-      function(/* function */ callback){
-        window.setTimeout(callback, 1000 / 60);
-      }
-    )
-  );
+let xhr = null;
+
+const requestAnimationFrame =
+  function(/* function */ callback){
+    window.setTimeout(callback, 1000 / 60);
+  };
 
 function compareVersion(v1, v2) {
-  var t1 = (v1 || '').split('.'), t2 = (v2 || '').split('.');
-  for (var i=0;i<Math.min(t1.length, t2.length);i++) {
-    var n1 = parseInt(t1[i], 10);
-    var n2 = parseInt(t2[i], 10);
+  const t1 = (v1 || '').split('.');
+  const t2 = (v2 || '').split('.');
+  for (let i=0;i<Math.min(t1.length, t2.length);i++) {
+    let n1 = parseInt(t1[i], 10);
+    let n2 = parseInt(t2[i], 10);
     n1 = isNaN(n1)?0:n1;
     n2 = isNaN(n2)?0:n2;
     if (n1 !== n2) {
@@ -58,9 +55,11 @@ function compareVersion(v1, v2) {
 }
 
 function offsetTop(ele) {
-  var top = 0;
+  let top = 0;
   while (ele) {
-    if (!isNaN(ele.offsetTop)) top += ele.offsetTop;
+    if (!isNaN(ele.offsetTop)) {
+      top += ele.offsetTop;
+    }
     ele = ele.offsetParent;
   }
 
@@ -68,25 +67,25 @@ function offsetTop(ele) {
 }
 
 function getViewport() {
-  var top = window.scrollY;
+  const top = window.scrollY;
   return  { top:top, bottom:top + Math.max(document.documentElement.clientHeight, window.innerHeight || 0) };
 }
 
 function inViewport(ele) {
-  var vp = getViewport();
-  var eleTop = offsetTop(ele);
-  var eleBottom = eleTop + ele.offsetHeight;
+  const vp = getViewport();
+  const eleTop = offsetTop(ele);
+  const eleBottom = eleTop + ele.offsetHeight;
 
   return ((eleBottom <= vp.bottom) && (eleTop >= vp.top + boardOffsetTop));
 }
 
 function animateScrollTo(scrollTo, interval, onComplete) {
-  var start = new Date().getTime();
-  var startY = window.scrollY;
-  var isUp = scrollTo < startY;
+  const start = new Date().getTime();
+  const startY = window.scrollY;
+  const isUp = scrollTo < startY;
 
   function scroller() {
-    var now = new Date().getTime();
+    const now = new Date().getTime();
     if (now - start >= interval) {
       window.scrollTo(0, scrollTo);
       if (onComplete) {
@@ -105,12 +104,9 @@ function animateScrollTo(scrollTo, interval, onComplete) {
 
 function animate(element, toOpts, interval, onComplete) {
   function initState() {
-    var result = {};
-    var computedStyle = [];
-    if (window.getComputedStyle) {
-      computedStyle = window.getComputedStyle(element);
-    }
-    for (var key in toOpts) {
+    const result = {};
+    const computedStyle = window.getComputedStyle(element) ?? [];
+    for (let key in toOpts) {
       result[key] = computedStyle[key] || ('0' + (toOpts[key] + '').replace(/(.*\d+)/, ''));
       if (result[key].match(/\d$/)) {
         result[key] += 'px';
@@ -120,17 +116,17 @@ function animate(element, toOpts, interval, onComplete) {
     return result;
   }
 
-  var initOpts = initState();
+  const initOpts = initState();
 
-  var start = new Date().getTime();
+  const start = new Date().getTime();
 
   function animator() {
-    var now = new Date().getTime();
+    const now = new Date().getTime();
 
     if (!window.getComputedStyle || now - start >= interval) {
-      for (var doneKey in toOpts) {
-        var doneTo = parseFloat(toOpts[doneKey]);
-        var doneUnit = (initOpts[doneKey] + '').match(/([^\d]*)$/);
+      for (let doneKey in toOpts) {
+        const doneTo = parseFloat(toOpts[doneKey]);
+        let doneUnit = (initOpts[doneKey] + '').match(/([^\d]*)$/);
         doneUnit = doneUnit?doneUnit[1].trim():'';
         element.style[doneKey] = doneTo + doneUnit;
       }
@@ -139,14 +135,14 @@ function animate(element, toOpts, interval, onComplete) {
       }
     }
     else {
-      for (var key in toOpts) {
-        var from = initOpts[key];
-        var to = toOpts[key];
-        var unit = (from + '').match(/([^\d]*)$/);
+      for (let key in toOpts) {
+        let from = initOpts[key];
+        let to = toOpts[key];
+        let unit = (from + '').match(/([^\d]*)$/);
         unit = unit?unit[1].trim():'';
         from = parseFloat(from);
         to = parseFloat(to);
-        var target = (from + (to - from) * (now - start) / interval) + unit;
+        const target = (from + (to - from) * (now - start) / interval) + unit;
         element.style[key] = target;
       }
       requestAnimationFrame(animator);
@@ -162,12 +158,12 @@ function ensureVisible(ele, top, padding) {
   padding = parseInt(padding, 10);
 
   if (!inViewport(ele)) {
-    var y = -1;
+    let y = -1;
     if (top === true) {
       y = Math.max(offsetTop(ele) - padding - boardOffsetTop, 0);
     }
     else if (top === false) {
-      var vp = getViewport();
+      const vp = getViewport();
       y = offsetTop(ele) + ele.offsetHeight + padding - (vp.bottom - vp.top);
     }
     if (y >= 0) {
@@ -210,21 +206,20 @@ function select(ele) {
     xhr.onreadystatechange = function() {
       if (xhr.readyState == 4) {
         if (xhr.status == 200) {
-          var t = xhr.responseText;
-          var parser = new DOMParser();
-          var doc = parser.parseFromString(t, "text/html");
+          const t = xhr.responseText;
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(t, "text/html");
           // remove unwanted elements
-          var eleArray = doc.querySelectorAll('.article-metaline, .article-metaline-right, .f2');
-          for (var i=0 ; i<eleArray.length ; i++) {
+          const eleArray = doc.querySelectorAll('.article-metaline, .article-metaline-right, .f2');
+          for (let i=0 ; i<eleArray.length ; i++) {
             eleArray[i].parentNode.removeChild(eleArray[i]);
           }
-          var content = doc.getElementById('main-content');
+          const content = doc.getElementById('main-content');
           if (content) {
             content.setAttribute('id', 'preview-' + content.getAttribute('id'));
             document.getElementById('preview').innerHTML = '';
             document.getElementById('preview').appendChild(content.cloneNode(true));
           }
-          doc = null;
         }
         xhr = null;
       }
@@ -236,7 +231,7 @@ function select(ele) {
 }
 
 function unselect() {
-  var link = getSelectedLink();
+  const link = getSelectedLink();
   if (link) {
     link.className = link.className.replace(/\s*ellab\-selected\s*/, '');
     if (!link.className) {
@@ -246,18 +241,18 @@ function unselect() {
 }
 
 function getNextLink(isUp) {
-  var links = getLinks();
+  const links = getLinks();
   if (links.length === 0) {
     return null;
   }
 
-  var curr = getSelectedLink();
+  const curr = getSelectedLink();
   if (curr === null) {
     return links[0];
   }
 
-  var prev = null;
-  for (var i=0 ; i<links.length ; i++) {
+  let prev = null;
+  for (let i=0 ; i<links.length ; i++) {
     if (isSelected(links[i])) {
       if (isUp) {
         return prev || links[i];
@@ -276,7 +271,7 @@ function boardKeyDown(e) {
     return;
   }
 
-  var help = document.querySelector('.kbhelp');
+  const help = document.querySelector('.kbhelp');
   if (help.style.display === '') {
     help.style.display = 'none';
     return;
@@ -286,14 +281,14 @@ function boardKeyDown(e) {
     return;
   }
 
-  var preview = document.getElementById('preview');
-  var expandedPreview = preview.getAttribute('data-ellab-preview-expanded');
+  const preview = document.getElementById('preview');
+  const expandedPreview = preview.getAttribute('data-ellab-preview-expanded');
 
   if (e.keyCode === KEYCODE_ENTER) {
     e.preventDefault();
     e.stopPropagation();
 
-    var curr = getSelectedLink();
+    const curr = getSelectedLink();
     if (curr) {
       curr.click();
     }
@@ -309,24 +304,24 @@ function boardKeyDown(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    var isPageDown = e.keyCode === KEYCODE_PAGE_DOWN ||
-                     (expandedPreview && e.shiftKey && e.keyCode === KEYCODE_DOWN) ||
-                     (expandedPreview && !e.shiftKey && e.keyCode === KEYCODE_SPACE);
-    var isPageUp =  e.keyCode === KEYCODE_PAGE_UP ||
-                     (expandedPreview && e.shiftKey && e.keyCode === KEYCODE_UP);
+    const isPageDown = e.keyCode === KEYCODE_PAGE_DOWN ||
+                       (expandedPreview && e.shiftKey && e.keyCode === KEYCODE_DOWN) ||
+                       (expandedPreview && !e.shiftKey && e.keyCode === KEYCODE_SPACE);
+    const isPageUp =  e.keyCode === KEYCODE_PAGE_UP ||
+                      (expandedPreview && e.shiftKey && e.keyCode === KEYCODE_UP);
 
     if (!preview.getAttribute('ellab-original-offset-top')) {
       preview.setAttribute('ellab-original-offset-top', preview.offsetTop);
     }
 
     // scroll 20% of page normally, large scroll (80%) for page up/down
-    var scrollPageSize = (isPageUp || isPageDown)?0.8:0.2;
-    var originalOffsetTop = parseInt(preview.getAttribute('ellab-original-offset-top'), 10);
-    var vp = getViewport();
-    var previewHeight = vp.bottom - vp.top - originalOffsetTop;
-    var scrollHeight = previewHeight - Math.max(20, previewHeight * (1 - scrollPageSize));
+    const scrollPageSize = (isPageUp || isPageDown)?0.8:0.2;
+    const originalOffsetTop = parseInt(preview.getAttribute('ellab-original-offset-top'), 10);
+    const vp = getViewport();
+    const previewHeight = vp.bottom - vp.top - originalOffsetTop;
+    const scrollHeight = previewHeight - Math.max(20, previewHeight * (1 - scrollPageSize));
 
-    var tm = preview.style.marginTop || 0;
+    let tm = preview.style.marginTop || 0;
     tm = parseInt(tm, 10);
     if (e.keyCode === KEYCODE_HOME) {
       tm = 0;
@@ -346,7 +341,6 @@ function boardKeyDown(e) {
   }
   else if ((expandedPreview && e.keyCode === KEYCODE_ESC) || (!e.shiftKey && e.keyCode === KEYCODE_LEFT)) {
     // expanded preview, then press esc, or left, collapse preview
-
     e.preventDefault();
     e.stopPropagation();
 
@@ -366,9 +360,9 @@ function boardKeyDown(e) {
     preview.setAttribute('data-ellab-preview-expanded', true);
     preview.style.marginTop = 0;
 
-    var oldWidth = preview.style.width;
+    const oldWidth = preview.style.width;
     preview.style.width = '100%';
-    var widthPx = parseInt(window.getComputedStyle(preview).width, 10);
+    const widthPx = parseInt(window.getComputedStyle(preview).width, 10);
     preview.style.width = oldWidth;
 
     animate(preview, { width: widthPx * 0.8 }, 200);
@@ -380,7 +374,7 @@ function boardKeyDown(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    var link = getNextLink(e.keyCode === KEYCODE_UP);
+    const link = getNextLink(e.keyCode === KEYCODE_UP);
     unselect();
     select(link);
     ensureVisible(link, e.keyCode === KEYCODE_UP);
@@ -390,7 +384,7 @@ function boardKeyDown(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    var endlinks = getLinks();
+    const endlinks = getLinks();
     if (endlinks.length) {
       unselect();
       select(endlinks[endlinks.length - 1]);
@@ -402,7 +396,7 @@ function boardKeyDown(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    var homeLinks = getLinks();
+    const homeLinks = getLinks();
     if (homeLinks.length) {
       unselect();
       select(homeLinks[0]);
@@ -415,7 +409,7 @@ function boardKeyDown(e) {
     e.stopPropagation();
 
     if (boardIndex) {
-      var nextLink = document.querySelector('a[href*="index' + (boardIndex + 1) + '.html"]');
+      const nextLink = document.querySelector('a[href*="index' + (boardIndex + 1) + '.html"]');
       if (nextLink) {
         nextLink.click();
       }
@@ -426,7 +420,7 @@ function boardKeyDown(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    var prevLink = null;
+    let prevLink = null;
     if (boardIndex) {
       prevLink = document.querySelector('a[href*="index' + (boardIndex - 1) + '.html"]');
     }
@@ -440,7 +434,7 @@ function boardKeyDown(e) {
 }
 
 function boardScroll(e) {
-  var curr = getSelectedLink();
+  const curr = getSelectedLink();
   if (curr && (curr.getAttribute('data-ensure-visible') || inViewport(curr))) {
     return;
   }
@@ -451,10 +445,9 @@ function boardScroll(e) {
     // you're at the bottom of the page
   }
 
-  var links = getLinks();
-  var i = 0;
+  const links = getLinks();
   if (e.scrollDirection === SCROLL_DOWN) {
-    for (i=0 ; i<links.length ; i++) {
+    for (let i=0 ; i<links.length ; i++) {
       if (inViewport(links[i])) {
           select(links[i]);
           break;
@@ -462,7 +455,7 @@ function boardScroll(e) {
     }
   }
   else if (e.scrollDirection === SCROLL_UP) {
-    for (i=links.length-1 ; i>=0 ; i--) {
+    for (let i=links.length-1 ; i>=0 ; i--) {
       if (inViewport(links[i])) {
           select(links[i]);
           break;
@@ -476,9 +469,9 @@ function messageKeyDown(e) {
     return;
   }
 
-  var curr = document.querySelector('.ellab-selected');
+  const curr = document.querySelector('.ellab-selected');
 
-  if (e.keyCode === 37) {
+  if (e.keyCode === KEYCODE_LEFT) {
     e.preventDefault();
     e.stopPropagation();
 
@@ -487,7 +480,7 @@ function messageKeyDown(e) {
 }
 
 function constructKeyboardHelp() {
-  var kbhelps = [
+  const kbhelps = [
     ['?', '顯示此幫助畫面 (按任意鍵關閉)'],
     [' '],
     ['up, down', '上一則 / 下一則'],
@@ -504,16 +497,16 @@ function constructKeyboardHelp() {
     ['pgdn, shift+down, space', '預覽面板向下捲動一頁'],
     ['home, end', '預覽面板跳至最頂或最底'],
   ];
-  var help = document.createElement('div');
+  const help = document.createElement('div');
   help.className = 'kbhelp';
   help.style.display = 'none';
-  var helphtml = '';
-  for (var i=0 ; i<kbhelps.length ; i++) {
+  let helphtml = '';
+  for (let i=0 ; i<kbhelps.length ; i++) {
     if (kbhelps[i].length === 1) {
       helphtml += '<div class="kbhelp-section">' + kbhelps[i][0] + '</div>';
     }
     else {
-      var keyhtml = '<div class="kbhelp-key"><span>' + kbhelps[i][0] + '</span></div>';
+      let keyhtml = '<div class="kbhelp-key"><span>' + kbhelps[i][0] + '</span></div>';
       // escape the "," first
       keyhtml = keyhtml.replace(/\\,/g, '&#44');
       keyhtml = keyhtml.replace(/,\s*/g, '</span></div><div class="kbhelp-separator">或</div><div class="kbhelp-key"><span>');
@@ -542,12 +535,12 @@ function main() {
   if (res) {
     pageType = PAGE_TYPE_BOARD;
     boardOffsetTop = offsetTop(document.getElementById('main-container'));
-    var div = document.createElement('div');
+    const div = document.createElement('div');
     div.setAttribute('id', 'preview');
     document.body.appendChild(div);
 
-    var prevSelectedLink = null;
-    var lastSelectedArticle = document.cookie.match(/ellabselectedarticle\=([^;]+)/);
+    let prevSelectedLink = null;
+    const lastSelectedArticle = document.cookie.match(/ellabselectedarticle\=([^;]+)/);
     if (lastSelectedArticle) {
       prevSelectedLink = getLinkByHref(lastSelectedArticle[1]);
     }
@@ -586,8 +579,8 @@ main();
 
 // show the help if upgrade a new version
 chrome.storage.local.get('lastVersion', function(v) {
-  var lastVersion = v.lastVersion;
-  var currVersion = chrome.runtime.getManifest().version;
+  const lastVersion = v.lastVersion;
+  const currVersion = chrome.runtime.getManifest().version;
   if (compareVersion(lastVersion, currVersion) < 0) {
     document.querySelector('.kbhelp').style.display = '';
     chrome.storage.local.set({lastVersion: currVersion});
